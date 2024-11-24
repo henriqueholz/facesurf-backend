@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photographer {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  photos    Photo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Photo {
+  id              String      @id @default(uuid())
+  photographerId  String
+  photographer    Photographer @relation(fields: [photographerId], references: [id])
+  url            String
+  price          Float
+  faceDescriptor Float[]
+  location       String?
+  dateTaken      DateTime
+  status         PhotoStatus  @default(ACTIVE)
+  purchases      Purchase[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Purchase {
+  id          String    @id @default(uuid())
+  photoId     String
+  photo       Photo     @relation(fields: [photoId], references: [id])
+  buyerEmail  String
+  amount      Float
+  stripeId    String    @unique
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+}
+
+enum PhotoStatus {
+  ACTIVE
+  SOLD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
